@@ -19,6 +19,7 @@
   (:use #:cl #:j-utils #:alexandria)
   (:export #:stage
            #:synthesizer
+           #:show-pipeline
 
            #:add-stage
            #:add-connection

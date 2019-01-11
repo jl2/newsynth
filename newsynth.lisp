@@ -52,6 +52,13 @@
   "Simulate a time step."
   nil)
 
+(defun show-pipeline (synthesizer stream)
+  (format stream "digraph {~%")
+  (with-slots (forward-links) synthesizer
+    (dolist (link forward-links)
+      (format stream "  ~a -> ~a~%" (car link) (cdr link))))
+  (format stream "}~%"))
+
 ;; (defclass wave-generator (stage)
 ;;   ((frequency :initarg :frequency :initform 440))
 ;;   (:documentation "Generate  wave form."))
