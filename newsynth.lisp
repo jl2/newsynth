@@ -17,17 +17,74 @@
 
 (in-package :newsynth)
 
+(deftype output-type () '(member :buffer :float :integer))
+
 (defclass stage ()
-  ((inputs :initform nil :initarg :inputs)
-   (outputs :initform nil :initarg :outputs)
-   (previous-value :initform 0.0))
-  (:documentation "A processing stage."))
+  ()
+  (:documentation "An audio processing stage in a synthesizer."))
+
+(defgeneric output-count (stage)
+  (:documentation "Return the number of outputs that a stage provides."))
+
+(defgeneric input-count (stage)
+  (:documentation "Return the number of inputs that a stage requires."))
+
+(defgeneric output-types (stage)
+  (:documentation "Return a list of output types that the stage provides."))
+
+(defgeneric input-types (stage)
+  (:documentation "Return a list of input types that the stage requires."))
+
+(defclass sine-generator (stage)
+  ((frequency :initform 440.0 :initarg :frequency :type double-float)
+   (buffer-size :initform 256 :initarg :buffer-size :type fixnum)
+   (output-buffer :initform nil :type '(simple-array *)))
+  (:documentation "Generate a sine wave of a certain frequency."))
+
+(defmethod output-count ((sine-generator stage))
+  1)
+
+(defmethod input-count ((sine-generator stage))
+  0)
+
+(defmethod output-types ((sine-generator stage))
+  '(:buffer))
+
+(defmethod output-types ((sine-generator stage))
+  nil)
+
+
+(defclass alsa-output (stage)
+  ((sample-rate :initform 44100 :initarg :sample-rate :type fixnum)
+   (channel-count :initform 2 :initarg :channel-count :type fixnum)
+   (pcm-type :initform '(signed-byte 32) :initarg :pcm-type)
+   (buffer-size :initform 256 :initarg :buffer-size :type fixnum)
+   (buffer :initform nil :type '(simple-array *)))
+  (:documentation "Play output to ALSA device."))
+
+(defmethod output-count ((alsa-output stage))
+  0)
+
+(defmethod input-count ((alsa-output stage))
+  1)
+
+(defmethod output-types ((alsa-output stage))
+  nil)
+
+(defmethod output-types ((alsa-output stage))
+  '(:buffer))
+
+
 
 (defclass synthesizer ()
   ((stages :initform (make-array '(20) :element-type '(or null stage) :adjustable t :fill-pointer 0 :initial-element nil))
    (forward-links :initform nil)
-   (backward-links :initform nil))
-  (:documentation "A synthesizer containing a number of stages and a directed graph of connections."))
+   (backward-links :initform nil)
+   (buffer-size :initform 256 :initarg :buffer-size)
+   (sample-rate :initform 44100 :initarg :sample-rate :type fixnum)
+   (channel-count :initform 2 :initarg :channel-count :type fixnum)
+   (pcm-type :initform '(signed-byte 32) :initarg :pcm-type))
+  (:documentation "A synthesizer containing a number of stages, a directed graph of connections, and output format information."))
 
 (defun add-stage (synthesizer stage)
   "Add a new stage to the synthesizer."
@@ -50,6 +107,7 @@
 
 (defun simulate (synthesizer steps)
   "Simulate a time step."
+  (declare (ignorable synthesizer steps))
   nil)
 
 (defun show-pipeline (synthesizer stream)
@@ -58,6 +116,8 @@
     (dolist (link forward-links)
       (format stream "  ~a -> ~a~%" (car link) (cdr link))))
   (format stream "}~%"))
+
+
 
 ;; (defclass wave-generator (stage)
 ;;   ((frequency :initarg :frequency :initform 440))
