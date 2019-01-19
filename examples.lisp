@@ -1,4 +1,4 @@
-;;;; newsynth.asd 
+;;;; examples.lisp 
 ;;
 ;; Copyright (c) 2019 Jeremiah LaRocco <jeremiah_larocco@fastmail.com>
 
@@ -15,18 +15,12 @@
 ;; ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 ;; OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
-(asdf:defsystem #:newsynth
-  :description "Common Lisp synthesizer library."
-  :author "Jeremiah LaRocco <jeremiah_larocco@fastmail.com>"
-  :license  "ISC"
-  :version "0.0.1"
-  :serial t
-  :depends-on (#:alexandria #:j-utils
-                            #+linux #:also-alsa
-                            #:mixalot)
-  :components ((:file "package")
-               (:file "newsynth")
-               (:file "alsa")
-               (:file "mp3-file")
-               (:file "examples"))
-  :in-order-to ((test-op (test-op newsynth.test))))
+(in-package :newsynth)
+
+
+(defun sine-wave-synth ()
+  (let* ((synth (make-instance 'synthesizer))
+         (alsa-output  (add-stage synth (make-instance 'mp3-output)))
+         (sine-gen (add-stage synth (make-instance 'sine-generator))))
+    (add-connection synth sine-gen alsa-output)
+    synth))

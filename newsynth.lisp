@@ -35,6 +35,7 @@
 (defgeneric input-types (stage)
   (:documentation "Return a list of input types that the stage requires."))
 
+
 (defclass sine-generator (stage)
   ((frequency :initform 440.0 :initarg :frequency :type double-float)
    (buffer-size :initform 256 :initarg :buffer-size :type fixnum)
@@ -52,28 +53,6 @@
 
 (defmethod output-types ((sine-generator stage))
   nil)
-
-
-(defclass alsa-output (stage)
-  ((sample-rate :initform 44100 :initarg :sample-rate :type fixnum)
-   (channel-count :initform 2 :initarg :channel-count :type fixnum)
-   (pcm-type :initform '(signed-byte 32) :initarg :pcm-type)
-   (buffer-size :initform 256 :initarg :buffer-size :type fixnum)
-   (buffer :initform nil :type '(simple-array *)))
-  (:documentation "Play output to ALSA device."))
-
-(defmethod output-count ((alsa-output stage))
-  0)
-
-(defmethod input-count ((alsa-output stage))
-  1)
-
-(defmethod output-types ((alsa-output stage))
-  nil)
-
-(defmethod output-types ((alsa-output stage))
-  '(:buffer))
-
 
 
 (defclass synthesizer ()
@@ -94,8 +73,8 @@
 (defun add-connection (synthesizer first-stage second-stage)
   "Add a connection from first-tage to second-stage."
   (with-slots (forward-links backward-links) synthesizer
-    (adjoin (cons first-stage second-stage) forward-links)
-    (adjoin (cons second-stage first-stage) backward-links)))
+    (setf forward-links (adjoin (cons first-stage second-stage) forward-links))
+    (setf backward-links (adjoin (cons second-stage first-stage) backward-links))))
 
 (defun inputs (synthesizer stage)
   "Find the stages that send input to stage."
@@ -105,10 +84,12 @@
   "Find the stages that receive output from stage."
   (remove-if-not (lambda (val) (= (car val ) stage)) (slot-value synthesizer 'forward-links)))
 
+
 (defun simulate (synthesizer steps)
   "Simulate a time step."
   (declare (ignorable synthesizer steps))
   nil)
+
 
 (defun show-pipeline (synthesizer stream)
   (format stream "digraph {~%")
@@ -116,23 +97,3 @@
     (dolist (link forward-links)
       (format stream "  ~a -> ~a~%" (car link) (cdr link))))
   (format stream "}~%"))
-
-
-
-;; (defclass wave-generator (stage)
-;;   ((frequency :initarg :frequency :initform 440))
-;;   (:documentation "Generate  wave form."))
-
-;; (defun create-wave-generator (frequency)
-;;   (make-instance 'wave-generator :frequency frequency))
-
-;; (defgeneric combine-inputs (stage)
-;;   (:documentation "Combine the inputs for a stage."))
-
-;; (defgeneric combine-outputs (stage)
-;;   (:documentation "Combine the outputs for a stage."))
-
-;; (defgeneric handle-step (stage)
-;;   (
-;;   ))
-

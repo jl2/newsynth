@@ -1,4 +1,4 @@
-;;;; newsynth.asd 
+;;;; mp3-file.lisp 
 ;;
 ;; Copyright (c) 2019 Jeremiah LaRocco <jeremiah_larocco@fastmail.com>
 
@@ -15,18 +15,35 @@
 ;; ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 ;; OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
-(asdf:defsystem #:newsynth
-  :description "Common Lisp synthesizer library."
-  :author "Jeremiah LaRocco <jeremiah_larocco@fastmail.com>"
-  :license  "ISC"
-  :version "0.0.1"
-  :serial t
-  :depends-on (#:alexandria #:j-utils
-                            #+linux #:also-alsa
-                            #:mixalot)
-  :components ((:file "package")
-               (:file "newsynth")
-               (:file "alsa")
-               (:file "mp3-file")
-               (:file "examples"))
-  :in-order-to ((test-op (test-op newsynth.test))))
+(in-package :newsynth)
+
+(defclass mp3-output (stage)
+  ((file-name :initarg :file-name :type string))
+  (:documentation "Write output to an mp3 file."))
+(defmethod output-count ((mp3-output stage))
+  0)
+
+(defmethod input-count ((mp3-output stage))
+  1)
+
+(defmethod output-types ((mp3-output stage))
+  '(:buffer))
+
+(defmethod output-types ((mp3-output stage))
+  nil)
+
+
+(defclass mp3-input (stage)
+  ((file-name :initarg :file-name :type string))
+  (:documentation "Read input from an mp3 file."))
+(defmethod output-count ((mp3-input stage))
+  1)
+
+(defmethod input-count ((mp3-input stage))
+  0)
+
+(defmethod output-types ((mp3-input stage))
+  '(:buffer))
+
+(defmethod output-types ((mp3-input stage))
+  nil)

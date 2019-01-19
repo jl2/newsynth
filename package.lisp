@@ -27,4 +27,5 @@
 
            #:inputs
            #:outputs
+           sine-wave-synth
            ))
